@@ -20,7 +20,8 @@ Sebelum menjalankan dashboard ini, pastikan memiliki hal-hal berikut:
 
 ## Instalasi
 
-1. Clone repositori ini atau unduh file dari repositori ini
+1. Clone repositori ini atau unduh file dari repositori ini :
+   !git clone https://github.com/Zeeshuwu/Zulfi_analisisData.git
 
 ## buat environment
 
