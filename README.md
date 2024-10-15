@@ -20,10 +20,7 @@ Sebelum menjalankan dashboard ini, pastikan memiliki hal-hal berikut:
 
 ## Instalasi
 
-1. Clone repositori ini atau unduh file dari repositori:
-   ```bash
-   git clone https://github.com/sintaalfirm/bikesharingdataset.git
-   cd bikesharingdataset
+1. Clone repositori ini atau unduh file dari repositori ini
 
 ## buat environment
 
