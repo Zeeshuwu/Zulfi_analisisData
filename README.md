@@ -42,8 +42,8 @@ pip install -r requirements.txt
 
 ## Jalankan dashboard
 
-streamlit run dashboard_bikesharing.py
+streamlit run dashboard.py
 
 ## buka lewat browser
 
-http://localhost:8501
+[http://localhost:8501](https://4ecf-34-169-15-186.ngrok-free.app/)
