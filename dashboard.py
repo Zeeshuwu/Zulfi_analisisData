@@ -1,74 +1,94 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Title of the dashboard
-st.title("🚴 Bike Rental Dashboard")
+# Streamlit Configuration
+st.set_page_config(page_title="Bike Sharing Analysis", layout="wide")
 
-# Load the datasets from GitHub
+# Title and Introduction
+st.title("Proyek Analisis Data: Bike Sharing")
+st.write("""
+**Nama:** Mohammad Zulfi Rahadi Putra
+
+**Email:** zulfi.rhp22@gmail.com
+
+**ID Dicoding:** 
+
+**Pertanyaan Bisnis:**
+1. Bagaimana pengaruh cuaca terhadap jumlah penyewaan sepeda dalam sebulan terakhir?
+2. Apakah terdapat pola tertentu dalam jumlah penyewaan sepeda berdasarkan hari dalam seminggu dalam sebulan terakhir?
+""")
+
+# Load Data
 hour_data_url = "https://raw.githubusercontent.com/Zeeshuwu/Zulfi_analisisData/main/hour.csv"
 day_data_url = "https://raw.githubusercontent.com/Zeeshuwu/Zulfi_analisisData/main/day.csv"
 
-try:
-    hour_data = pd.read_csv(hour_data_url)
-    day_data = pd.read_csv(day_data_url)
-except Exception as e:
-    st.error(f"Failed to load data: {e}")
-    st.stop()
+hour_data = pd.read_csv(hour_data_url)
+day_data = pd.read_csv(day_data_url)
 
-required_columns = {'hour': ['season', 'cnt'], 'day': ['weekday', 'cnt']}
-if not all(col in hour_data.columns for col in required_columns['hour']):
-    st.error("The hour dataset does not have the required columns!")
-    st.stop()
-if not all(col in day_data.columns for col in required_columns['day']):
-    st.error("The day dataset does not have the required columns!")
-    st.stop()
+# Preprocessing
+hour_data['dteday'] = pd.to_datetime(hour_data['dteday'])
 
-# Question 1: How does bike rental vary by season?
-st.header("Bike Rental Distribution by Season 🚴‍♀️")
+# Function to Analyze Weather Effect on Rentals
+def plot_weather_effect(data):
+    last_month_data = data[data['dteday'] >= (data['dteday'].max() - pd.Timedelta(days=30))]
+    avg_rentals_by_weather = last_month_data.groupby('weathersit')['cnt'].mean().reset_index()
 
-season_mapping = {1: 'Spring', 2: 'Summer', 3: 'Autumn', 4: 'Winter'}
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=avg_rentals_by_weather, x='weathersit', y='cnt', palette='coolwarm')
+    plt.title('Rata-rata Penyewaan Sepeda Berdasarkan Situasi Cuaca (30 Hari Terakhir)', fontsize=14)
+    plt.xlabel('Situasi Cuaca', fontsize=12)
+    plt.ylabel('Rata-rata Penyewaan', fontsize=12)
+    plt.xticks(ticks=[0, 1, 2, 3], labels=['Cerah', 'Kabut', 'Salju/Hujan Ringan', 'Hujan Salju Berat'])
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    st.pyplot(plt)
 
-# Prepare the data for each season
-grouped_data = [hour_data[hour_data['season'] == season]['cnt'] for season in season_mapping.keys()]
+# Function to Analyze Weekly Patterns
+def plot_weekly_pattern(data):
+    last_month_data = data[data['dteday'] >= (data['dteday'].max() - pd.Timedelta(days=30))]
+    last_month_data['weekday'] = last_month_data['dteday'].dt.day_name()
+    avg_rentals_by_weekday = last_month_data.groupby('weekday')['cnt'].mean().reindex(
+        ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).reset_index()
 
-# Create the boxplot
-fig1, ax1 = plt.subplots(figsize=(10, 6))
-ax1.boxplot(
-    grouped_data,
-    labels=list(season_mapping.values()),  # Ensure labels match the number of data groups
-    patch_artist=True,
-    boxprops=dict(facecolor='lightblue', color='blue')
-)
-ax1.set_title('Bike Rental Distribution by Season 🚴‍♀️', fontsize=16)
-ax1.set_xlabel('Season', fontsize=14)
-ax1.set_ylabel('Total Rentals 🚴', fontsize=14)
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=avg_rentals_by_weekday, x='weekday', y='cnt', palette='viridis')
+    plt.title('Rata-rata Penyewaan Sepeda Berdasarkan Hari dalam Seminggu (30 Hari Terakhir)', fontsize=14)
+    plt.xlabel('Hari', fontsize=12)
+    plt.ylabel('Rata-rata Penyewaan', fontsize=12)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    st.pyplot(plt)
 
-# Render the plot in Streamlit
-st.pyplot(fig1)
-
-# Question 2: What are the bike rental trends by day of the week?
-st.header("Total Bike Rentals by Day of the Week 🚴‍♂️")
-
-# Mapping weekdays to names
-weekday_mapping = {0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat'}
-day_data['day_of_week'] = day_data['weekday'].map(weekday_mapping)
-
-# Aggregate rentals by day of the week
-weekly_rentals = day_data.groupby('day_of_week')['cnt'].sum().reindex(
-    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+# Sidebar for EDA Options
+eda_option = st.sidebar.selectbox(
+    "Pilih Analisis:",
+    ["Rata-rata Penyewaan Cuaca (30 Hari Terakhir)", 
+     "Distribusi Penyewaan Sepeda", 
+     "Pola Mingguan Penyewaan Sepeda"]
 )
 
-# Create the bar chart
-fig2, ax2 = plt.subplots(figsize=(10, 6))
-ax2.bar(weekly_rentals.index, weekly_rentals.values, color='skyblue', edgecolor='black')
-ax2.set_title('Total Bike Rentals by Day of the Week', fontsize=16)
-ax2.set_xlabel('Day of the Week', fontsize=14)
-ax2.set_ylabel('Total Rentals 🚴', fontsize=14)
+if eda_option == "Rata-rata Penyewaan Cuaca (30 Hari Terakhir)":
+    st.header("Rata-rata Penyewaan Berdasarkan Situasi Cuaca")
+    plot_weather_effect(hour_data)
 
-# Add data labels to the bars
-for i, v in enumerate(weekly_rentals.values):
-    ax2.text(i, v + 50, str(v), ha='center', fontsize=10)
+elif eda_option == "Distribusi Penyewaan Sepeda":
+    st.header("Distribusi Penyewaan Sepeda")
+    plt.figure(figsize=(10, 5))
+    sns.histplot(hour_data['cnt'], bins=30, kde=True, color='blue')
+    plt.title('Distribusi Penyewaan Sepeda', fontsize=14)
+    plt.xlabel('Total Penyewaan', fontsize=12)
+    plt.ylabel('Frekuensi', fontsize=12)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    st.pyplot(plt)
 
-# Render the plot in Streamlit
-st.pyplot(fig2)
+elif eda_option == "Pola Mingguan Penyewaan Sepeda":
+    st.header("Pola Mingguan Penyewaan Sepeda")
+    plot_weekly_pattern(hour_data)
+
+# Footer
+st.write("""---
+**Insight:**
+- Cuaca memengaruhi jumlah penyewaan sepeda, terutama pada hari cerah.
+- Pola penyewaan cenderung meningkat pada hari kerja dibandingkan akhir pekan.
+""")
