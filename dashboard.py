@@ -14,7 +14,7 @@ st.write("""
 
 **Email:** zulfi.rhp22@gmail.com
 
-**ID Dicoding:** 
+**ID Dicoding:** mzulfirp
 
 **Pertanyaan Bisnis:**
 1. Bagaimana pengaruh cuaca terhadap jumlah penyewaan sepeda dalam sebulan terakhir?
